@@ -50,7 +50,7 @@ func (k Keys) Sign(data string, key *rsa.PrivateKey) ([]byte, error) {
 	return sign, nil
 }
 
-func Verify(pub *rsa.PublicKey, data string, sign []byte) bool {
+func Verify(pub *rsa.PublicKey, data string, sign []byte) (bool, error) {
 	hash := crypto.SHA256.New()
 	hash.Write([]byte(data))
 	mesHash := hash.Sum(nil)
@@ -58,8 +58,7 @@ func Verify(pub *rsa.PublicKey, data string, sign []byte) bool {
 	err := rsa.VerifyPSS(pub, crypto.SHA256, mesHash, sign, nil)
 	if err != nil {
 
-		log.Println(err)
-		return false
+		return false, err
 	}
-	return true
+	return true, err
 }

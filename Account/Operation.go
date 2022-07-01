@@ -14,11 +14,11 @@ func VerifyOperation(o Operation) bool {
 		fmt.Println("Balance is unvalid")
 		return false
 	}
-	if !Verify(o.Sender.Wallets.PublicKey, o.ToString(), o.Signature) {
+	buf, _ := Verify(o.Sender.Wallets.PublicKey, o.ToString(), o.Signature)
+	if buf {
 		fmt.Println("Has anyone changed the data")
 		return false
 	}
-
 	return true
 }
 

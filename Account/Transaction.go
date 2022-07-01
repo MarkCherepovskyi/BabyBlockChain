@@ -1,33 +1,37 @@
 package Account
 
-import "fmt"
+import (
+	"crypto/rsa"
+	"fmt"
+)
 
 var (
 	ID = 0
 )
 
+var mappool = make([]Transaction, 0)
+
 type Transaction struct {
-	ID              int
-	setOfOperations []Operation
-	nonce           uint
+	ID        int
+	Operation *Operation
+	nonce     uint
+	FullSign  []byte
+	PublicKey *rsa.PublicKey
+	numOfSing int8
 }
 
 func (tx *Transaction) AddTX(o Operation) {
 
-	tx.setOfOperations = append(tx.setOfOperations, o)
-
+	if &o != nil {
+		tx.Operation = &o
+		tx.AddToMappool()
+	}
 }
 
 func (tx *Transaction) ToString() string {
-
-	return fmt.Sprintf("%d %s %d", tx.ID, tx.opToString(), tx.nonce)
-
+	return fmt.Sprintf("%d %s %d", tx.ID, tx.Operation.ToString(), tx.nonce)
 }
 
-func (tx *Transaction) opToString() string {
-	buffer := ""
-	for _, data := range tx.setOfOperations {
-		buffer += fmt.Sprintf("%s ", data.ToString())
-	}
-	return buffer
+func (tx *Transaction) AddToMappool() {
+	mappool = append(mappool, *tx)
 }

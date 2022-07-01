@@ -13,10 +13,10 @@ const (
 )
 
 type Account struct {
-	ID      string
-	Wallets Keys
-	Balance int
-	//Validator bool
+	ID        string
+	Wallets   Keys
+	Balance   int
+	Validator bool
 }
 
 func (a Account) CreateOperation(receiver Account, amount int) (*Operation, error) {
@@ -38,9 +38,12 @@ func (a Account) CreateOperation(receiver Account, amount int) (*Operation, erro
 
 }
 
-func (a Account) CreateTxt() *Transaction {
+func (a *Account) CreateTxt() *Transaction {
 	tx := Transaction{
 		ID,
+		nil,
+		0,
+		nil,
 		nil,
 		0,
 	}
@@ -89,21 +92,49 @@ func GenAccount() *Account {
 	}
 	a.Wallets = Keys{}
 	a.Wallets.PrivateKey, a.Wallets.PublicKey = a.Wallets.GenKeys()
+	a.Validator = false
 	a.Balance = 1
 	return &a
 }
 
-func (a Account) UpdateBalance(balance int) {
+func (a *Account) UpdateBalance(balance int) {
 	a.Balance = balance
 
 }
 
-func (a Account) GetBalance() int {
+func (a *Account) ChangeMyStatus() { //for test
+	a.Validator = true
+}
+
+func (a *Account) ChangeStatus(ac *Account) {
+	if a.Validator || a != ac {
+		ac.Validator = true
+	}
+
+}
+func (a *Account) GetBalance() int {
 	fmt.Println(a.Balance)
 	return a.Balance
 }
 
-func (a Account) SignData(data string) ([]byte, error) {
+func (a *Account) VerifyTX(tx *Transaction) bool {
+	valid, _ := Verify(tx.PublicKey, tx.ToString(), tx.FullSign)
+	if !valid {
+		return false
+	}
+	return true
+}
+
+func (a *Account) SignTX(tx *Transaction) ([]byte, error) {
+	sign, err := a.SignData(tx.ToString())
+	tx.FullSign = sign
+	tx.PublicKey = a.Wallets.PublicKey
+
+	return sign, err
+
+}
+
+func (a *Account) SignData(data string) ([]byte, error) {
 	sign, err := a.Wallets.Sign(data, a.Wallets.PrivateKey)
 	if sign == nil {
 
@@ -112,9 +143,16 @@ func (a Account) SignData(data string) ([]byte, error) {
 	return sign, nil
 }
 
-func (a Account) ToString() string {
+func (a *Account) ToString() string {
 	priv, pub := a.Wallets.ToString()
 	str := fmt.Sprintf("ID %s \nBalance %d\nPirvate %s\nPublic %s\n", a.ID, a.Balance, priv, pub)
 
 	return str
+}
+
+func (a Account) ShowMappol() {
+	fmt.Println("SHOW MAPPOOL")
+	for _, tx := range mappool {
+		fmt.Println(tx.ToString())
+	}
 }

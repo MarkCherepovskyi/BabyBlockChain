@@ -7,7 +7,8 @@ import (
 )
 
 func check(key *rsa.PublicKey, msg string, sign []byte) {
-	if Account.Verify(key, msg, sign) {
+	buf, _ := Account.Verify(key, msg, sign)
+	if buf {
 		fmt.Println("Nice")
 	} else {
 		fmt.Println("Error")
@@ -15,23 +16,13 @@ func check(key *rsa.PublicKey, msg string, sign []byte) {
 }
 
 func main() {
-	//keys := Account.Keys{}
-	//
-	//keys.PrivateKey, keys.PublicKey = keys.GenKeys()
-	//
-	//keys.ToString()
-	//
-	//msg := "msg"
-	//msg2 := "MSG222"
-	//sign := keys.Sign(msg, keys.PrivateKey)
-	//
-	//check(keys.PublicKey, msg, sign)
-	//check(keys.PublicKey, msg2, sign)
+
 	user := Account.GenAccount()
 	user.ToString()
 	msg := "msg 1"
 	sign, _ := user.SignData(msg)
-	if Account.Verify(user.Wallets.PublicKey, msg, sign) {
+	buf, _ := Account.Verify(user.Wallets.PublicKey, msg, sign)
+	if buf {
 		fmt.Println("Nice")
 	}
 
@@ -41,20 +32,23 @@ func main() {
 	if err != nil {
 		return
 	}
-	op2, err := user.CreateOperation(*user2, 5)
-	if err != nil {
-		return
-	}
-	op3, err := user2.CreateOperation(*user, 5)
-	if err != nil {
-		return
-	}
+
 	tx := user.CreateTxt()
 	tx.AddTX(*op1)
-	tx.AddTX(*op2)
-	tx.AddTX(*op3)
 
 	fmt.Println("//////////////")
 	fmt.Println(tx.ToString())
+
+	user.ChangeMyStatus()
+	user.SignTX(tx)
+	fmt.Println(tx.FullSign)
+	fmt.Println(tx.PublicKey)
+	if user.VerifyTX(tx) {
+		fmt.Println("Nice. TX is valid")
+	} else {
+		fmt.Println("All is bad ")
+	}
+
+	user.ShowMappol()
 
 }
