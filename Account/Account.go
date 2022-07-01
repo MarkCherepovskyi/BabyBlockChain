@@ -3,8 +3,8 @@ package Account
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -16,14 +16,49 @@ type Account struct {
 	ID      string
 	Wallets Keys
 	Balance int
+	//Validator bool
+}
+
+func (a Account) CreateOperation(receiver Account, amount int) (*Operation, error) {
+	sender := a
+	o := Operation{
+		sender,
+		receiver,
+		amount,
+		nil,
+	}
+
+	sign, err := sender.SignData(o.ToString())
+	if err != nil {
+		return nil, err
+	}
+	o.Signature = sign
+
+	return &o, nil
+
+}
+
+func (a Account) CreateTxt() *Transaction {
+	tx := Transaction{
+		ID,
+		nil,
+		0,
+	}
+	return &tx
+}
+
+func genID() (string, error) {
+	ID, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		return "", err
+
+	}
+	return string(ID), nil
 }
 
 func GenAccount() *Account {
 	a := Account{}
-	fmt.Fscan(os.Stdin, &a.ID)
-	if a.ID == "" {
-		fmt.Println("You don't enter ID")
-	}
+	a.ID, _ = genID()
 	file, err := os.OpenFile(FILE, os.O_APPEND, 0666)
 	if err != nil {
 		createFile, _ := os.Create(FILE)
@@ -68,20 +103,18 @@ func (a Account) GetBalance() int {
 	return a.Balance
 }
 
-func (a Account) SignData(data string) []byte {
-	sign := a.Wallets.Sign(data, a.Wallets.PrivateKey)
+func (a Account) SignData(data string) ([]byte, error) {
+	sign, err := a.Wallets.Sign(data, a.Wallets.PrivateKey)
 	if sign == nil {
-		log.Println("ERROR")
-		return nil
+
+		return nil, err
 	}
-	return sign
+	return sign, nil
 }
 
 func (a Account) ToString() string {
 	priv, pub := a.Wallets.ToString()
-	str := fmt.Sprintf("ID %s \nBalance %s\nPirvate %s\nPublic %s\n", a.ID, string(a.Balance), priv, pub)
-
-	fmt.Println(str)
+	str := fmt.Sprintf("ID %s \nBalance %d\nPirvate %s\nPublic %s\n", a.ID, a.Balance, priv, pub)
 
 	return str
 }

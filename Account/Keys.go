@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
-	"fmt"
 	"log"
 )
 
@@ -33,11 +32,11 @@ func (k Keys) GenKeys() (*rsa.PrivateKey, *rsa.PublicKey) {
 func (k Keys) ToString() (string, string) {
 	privStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(k.PrivateKey))
 	pubStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(k.PublicKey))
-	fmt.Printf("Private key - %s \nPublic Key - %s\n", privStr, pubStr)
+
 	return privStr, pubStr
 }
 
-func (k Keys) Sign(data string, key *rsa.PrivateKey) []byte {
+func (k Keys) Sign(data string, key *rsa.PrivateKey) ([]byte, error) {
 	hash := crypto.SHA256.New()
 	hash.Write([]byte(data))
 	mesHash := hash.Sum(nil)
@@ -45,10 +44,10 @@ func (k Keys) Sign(data string, key *rsa.PrivateKey) []byte {
 	sign, err := rsa.SignPSS(rand.Reader, key, crypto.SHA256, mesHash, nil)
 	if err != nil {
 		log.Println("error")
-		log.Println(err)
-		return nil
+
+		return nil, err
 	}
-	return sign
+	return sign, nil
 }
 
 func Verify(pub *rsa.PublicKey, data string, sign []byte) bool {

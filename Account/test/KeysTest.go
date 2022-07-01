@@ -29,5 +29,32 @@ func main() {
 	//check(keys.PublicKey, msg2, sign)
 	user := Account.GenAccount()
 	user.ToString()
+	msg := "msg 1"
+	sign, _ := user.SignData(msg)
+	if Account.Verify(user.Wallets.PublicKey, msg, sign) {
+		fmt.Println("Nice")
+	}
+
+	user2 := Account.GenAccount()
+
+	op1, err := user.CreateOperation(*user2, 2)
+	if err != nil {
+		return
+	}
+	op2, err := user.CreateOperation(*user2, 5)
+	if err != nil {
+		return
+	}
+	op3, err := user2.CreateOperation(*user, 5)
+	if err != nil {
+		return
+	}
+	tx := user.CreateTxt()
+	tx.AddTX(*op1)
+	tx.AddTX(*op2)
+	tx.AddTX(*op3)
+
+	fmt.Println("//////////////")
+	fmt.Println(tx.ToString())
 
 }
