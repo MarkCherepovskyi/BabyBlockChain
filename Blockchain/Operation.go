@@ -1,6 +1,8 @@
-package Account
+package Blockchain
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Operation struct {
 	Sender    Account
@@ -30,4 +32,10 @@ func (o Operation) ToString() string {
 
 func (o Operation) PrintKey() {
 	fmt.Println(o.Sender.Wallets.ToString())
+}
+
+func (o Operation) carryOutOp() {
+	o.Receiver.Balance++
+	o.Sender.Balance--
+
 }

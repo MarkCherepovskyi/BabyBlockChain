@@ -1,11 +1,12 @@
-package Account
+package Blockchain
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"strings"
+	"time"
 )
 
 const (
@@ -17,32 +18,57 @@ type Account struct {
 	Wallets   Keys
 	Balance   int
 	Validator bool
+	Candidate bool
 }
 
-func (a Account) CreateOperation(receiver Account, amount int) (*Operation, error) {
-	sender := a
-	o := Operation{
-		sender,
-		receiver,
-		amount,
+func (a *Account) CreateBlock(prevHash []byte) *Block {
+	b := Block{
+		"",
+		prevHash,
+		time.Now(),
+		nil,
+		a,
 		nil,
 	}
 
-	sign, err := sender.SignData(o.ToString())
+	id, err := genID()
 	if err != nil {
-		return nil, err
+		b.ID = "Empty ID"
 	}
-	o.Signature = sign
+	b.ID = id
+	b.AddTx()
+	return &b
+}
 
-	return &o, nil
+func (a Account) CreateOperation(receiver Account) (*Operation, error) {
+	sender := a
+	if receiver.Candidate {
+		o := Operation{
+			sender,
+			receiver,
+			1,
+			nil,
+		}
 
+		sign, err := sender.SignData(o.ToString())
+		if err != nil {
+			return nil, err
+		}
+		o.Signature = sign
+
+		return &o, nil
+
+	}
+
+	return nil, nil
 }
 
 func (a *Account) CreateTxt() *Transaction {
+	rand, _ := rand.Read([]byte("NUM"))
 	tx := Transaction{
 		ID,
 		nil,
-		0,
+		uint(rand),
 		nil,
 		nil,
 		0,
@@ -50,14 +76,15 @@ func (a *Account) CreateTxt() *Transaction {
 	return &tx
 }
 
-func genID() (string, error) {
-	ID, err := exec.Command("uuidgen").Output()
-	if err != nil {
-		return "", err
-
-	}
-	return string(ID), nil
-}
+//func genID() (string, error) {
+//	ID, err := uuid.NewV4()
+//	//ID, err := exec.Command("uuidgen").Output()
+//	if err != nil {
+//		return "", err
+//
+//	}
+//	return ID.String(), nil
+//}
 
 func GenAccount() *Account {
 	a := Account{}
@@ -79,9 +106,7 @@ func GenAccount() *Account {
 		if err == io.EOF {
 			break
 		}
-
 	}
-
 	defer file.Close()
 	allID := string(data)
 	if !strings.Contains(allID, a.ID) {
@@ -94,12 +119,18 @@ func GenAccount() *Account {
 	a.Wallets.PrivateKey, a.Wallets.PublicKey = a.Wallets.GenKeys()
 	a.Validator = false
 	a.Balance = 1
+	a.Candidate = false
 	return &a
+}
+
+func (a *Account) BecomeCandidate(c *Account) {
+	if a.Validator {
+		c.Candidate = true
+	}
 }
 
 func (a *Account) UpdateBalance(balance int) {
 	a.Balance = balance
-
 }
 
 func (a *Account) ChangeMyStatus() { //for test
@@ -118,26 +149,19 @@ func (a *Account) GetBalance() int {
 }
 
 func (a *Account) VerifyTX(tx *Transaction) bool {
-	valid, _ := Verify(tx.PublicKey, tx.ToString(), tx.FullSign)
-	if !valid {
-		return false
+	if a.Validator {
+		valid, _ := Verify(tx.PublicKey, tx.ToString(), tx.FullSign)
+		if !valid {
+			return false
+		}
+		return true
 	}
-	return true
-}
-
-func (a *Account) SignTX(tx *Transaction) ([]byte, error) {
-	sign, err := a.SignData(tx.ToString())
-	tx.FullSign = sign
-	tx.PublicKey = a.Wallets.PublicKey
-
-	return sign, err
-
+	return false
 }
 
 func (a *Account) SignData(data string) ([]byte, error) {
 	sign, err := a.Wallets.Sign(data, a.Wallets.PrivateKey)
 	if sign == nil {
-
 		return nil, err
 	}
 	return sign, nil
@@ -145,14 +169,14 @@ func (a *Account) SignData(data string) ([]byte, error) {
 
 func (a *Account) ToString() string {
 	priv, pub := a.Wallets.ToString()
-	str := fmt.Sprintf("ID %s \nBalance %d\nPirvate %s\nPublic %s\n", a.ID, a.Balance, priv, pub)
+	str := fmt.Sprintf("ID - %s\nBalance - %d\nPirvate - %s\nPublic - %s\nw", a.ID, a.Balance, priv, pub)
 
 	return str
 }
 
 func (a Account) ShowMappol() {
 	fmt.Println("SHOW MAPPOOL")
-	for _, tx := range mappool {
+	for _, tx := range Mappool {
 		fmt.Println(tx.ToString())
 	}
 }
