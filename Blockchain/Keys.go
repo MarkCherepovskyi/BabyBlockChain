@@ -13,6 +13,8 @@ const (
 	KEY_SIZE = 512
 )
 
+//private key is not imported
+
 type Keys struct {
 	PrivateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey

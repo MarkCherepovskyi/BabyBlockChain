@@ -1,6 +1,7 @@
 package Blockchain
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 )
@@ -28,6 +29,10 @@ func genesiBlock() *Block {
 		nil,
 	}
 	return &b
+}
+
+func (bc *Blockchain) GenTokenFromFaucet() {
+
 }
 
 func InitBlockchain() *Blockchain {
@@ -58,19 +63,34 @@ func (bc *Blockchain) ShowCandidate() {
 }
 
 func (bc *Blockchain) AddBlock(b *Block) {
-	bc.BlockHistory = append(bc.BlockHistory, b)
+	if bytes.Equal(bc.BlockHistory[len(bc.BlockHistory)-1].Sign, b.PrevHash) {
+		bc.BlockHistory = append(bc.BlockHistory, b)
+	}
+
 }
 
 func (bc *Blockchain) VerifyBlock(b *Block) bool {
-	if b.Verify() {
-		return true
+	if bytes.Equal(bc.BlockHistory[len(bc.BlockHistory)-1].Sign, b.PrevHash) {
+		if b.Verify() {
+			return true
+		}
 	}
+
 	return false
 }
 
-func (bc *Blockchain) ShowCoindata() {
-	fmt.Println("SHOW COINDATABASE")
-	for id, balance := range bc.CoinDatabase {
-		fmt.Printf("ID - %s\n BALANCE - %d", id, balance)
+func (bc *Blockchain) ShowHistory() {
+	fmt.Println("SHOW HISTORY")
+	for i, block := range bc.BlockHistory {
+		fmt.Println(i)
+		fmt.Println(block.ToString())
+	}
+}
+
+func (bc *Blockchain) ShowMappol() {
+	fmt.Println("SHOW MAPPOOL")
+	for i, tx := range Mappool {
+		fmt.Println(i)
+		fmt.Println(tx.ToString())
 	}
 }

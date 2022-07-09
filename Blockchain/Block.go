@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	MAX_NUM_OF_TX = 50
+	MAX_NUM_OF_TX = 1
 )
 
 type Block struct {
@@ -17,19 +17,6 @@ type Block struct {
 	setOfTransaction []Transaction
 	Signer           *Account
 	Sign             []byte
-}
-
-func (b *Block) ToString() string {
-	return fmt.Sprintf("ID - %s\nPrevHash - %s\nSetOfTx%s\n Time - %s", b.ID, b.PrevHash, b.TxToString(), b.time.String())
-}
-
-func (b *Block) TxToString() string {
-	buffer := ""
-	for _, tx := range b.setOfTransaction {
-		buffer += tx.ToString()
-
-	}
-	return buffer
 }
 
 func (b *Block) AddTx() {
@@ -42,9 +29,13 @@ func (b *Block) AddTx() {
 			}
 		}
 	}
+
+	b.SignBlock()
+
 }
 
 func (b *Block) SignBlock() []byte {
+
 	strBlock := b.ToString()
 	sign, err := b.Signer.Wallets.Sign(strBlock, b.Signer.Wallets.PrivateKey)
 	if err != nil {
@@ -69,4 +60,17 @@ func genID() (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("IDTX%s", id.String()), nil
+}
+
+func (b *Block) ToString() string {
+	return fmt.Sprintf("ID - %s\nPrevHash - %s\nSetOfTx - %s\nTime - %s\n", b.ID, b.PrevHash, b.TxToString(), b.time.String())
+}
+
+func (b *Block) TxToString() string {
+	buffer := ""
+	for _, tx := range b.setOfTransaction {
+		buffer += tx.ToString()
+
+	}
+	return buffer
 }

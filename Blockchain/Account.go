@@ -1,7 +1,6 @@
 package Blockchain
 
 import (
-	"crypto/rand"
 	"fmt"
 	"io"
 	"os"
@@ -55,36 +54,13 @@ func (a Account) CreateOperation(receiver Account) (*Operation, error) {
 			return nil, err
 		}
 		o.Signature = sign
-
+		fmt.Println("Op is created")
+		o.CreateTxt()
+		fmt.Println("Tx is created")
 		return &o, nil
-
 	}
-
 	return nil, nil
 }
-
-func (a *Account) CreateTxt() *Transaction {
-	rand, _ := rand.Read([]byte("NUM"))
-	tx := Transaction{
-		ID,
-		nil,
-		uint(rand),
-		nil,
-		nil,
-		0,
-	}
-	return &tx
-}
-
-//func genID() (string, error) {
-//	ID, err := uuid.NewV4()
-//	//ID, err := exec.Command("uuidgen").Output()
-//	if err != nil {
-//		return "", err
-//
-//	}
-//	return ID.String(), nil
-//}
 
 func GenAccount() *Account {
 	a := Account{}
@@ -98,7 +74,6 @@ func GenAccount() *Account {
 
 		GenAccount()
 	}
-
 	data := make([]byte, 64)
 
 	for {
@@ -133,7 +108,7 @@ func (a *Account) UpdateBalance(balance int) {
 	a.Balance = balance
 }
 
-func (a *Account) ChangeMyStatus() { //for test
+func (a *Account) ChangeMyStatus() {
 	a.Validator = true
 }
 
@@ -169,14 +144,7 @@ func (a *Account) SignData(data string) ([]byte, error) {
 
 func (a *Account) ToString() string {
 	priv, pub := a.Wallets.ToString()
-	str := fmt.Sprintf("ID - %s\nBalance - %d\nPirvate - %s\nPublic - %s\nw", a.ID, a.Balance, priv, pub)
+	str := fmt.Sprintf("ID - %s\nBalance - %d\nPirvate - %s\nPublic - %s\n", a.ID, a.Balance, priv, pub)
 
 	return str
-}
-
-func (a Account) ShowMappol() {
-	fmt.Println("SHOW MAPPOOL")
-	for _, tx := range Mappool {
-		fmt.Println(tx.ToString())
-	}
 }

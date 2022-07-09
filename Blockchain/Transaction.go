@@ -14,7 +14,7 @@ var Mappool = make([]Transaction, 0)
 type Transaction struct {
 	ID        int
 	Operation *Operation
-	nonce     uint
+	nonce     uint64
 	FullSign  []byte
 	PublicKey *rsa.PublicKey
 	numOfSing int8
@@ -29,7 +29,7 @@ func (tx *Transaction) signTX(a *Account) ([]byte, error) {
 	return sign, err
 }
 
-func (tx *Transaction) AddOp(o Operation) {
+func (tx *Transaction) addOp(o Operation) {
 
 	if &o != nil {
 		if VerifyOperation(o) {
@@ -47,5 +47,5 @@ func (tx *Transaction) addToMappool() {
 }
 
 func (tx *Transaction) ToString() string {
-	return fmt.Sprintf("ID - %d \n Op - %s\n Nonce - %d\n", tx.ID, tx.Operation.ToString(), tx.nonce)
+	return fmt.Sprintf("ID - %d \nOp - %s\nNonce - %d\n", tx.ID, tx.Operation.ToString(), tx.nonce)
 }
