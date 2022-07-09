@@ -18,7 +18,7 @@ func VerifyOperation(o Operation) bool {
 		fmt.Println("Balance is unvalid")
 		return false
 	}
-	buf, _ := Verify(o.Sender.Wallets.PublicKey, o.ToString(), o.Signature)
+	buf, _ := Verify(o.Sender.Wallets.GetPublicKey(), o.ToString(), o.Signature)
 	if !buf {
 		fmt.Println("Someone changed the data")
 		return false

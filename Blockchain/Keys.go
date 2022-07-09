@@ -13,27 +13,30 @@ const (
 	KEY_SIZE = 512
 )
 
-//private key is not imported
-
 type Keys struct {
-	PrivateKey *rsa.PrivateKey
-	PublicKey  *rsa.PublicKey
+	privateKey *rsa.PrivateKey
 }
 
-func (k Keys) GenKeys() (*rsa.PrivateKey, *rsa.PublicKey) {
+func (k *Keys) GetPrivate() *rsa.PrivateKey {
+	return k.privateKey
+}
+
+func (k *Keys) GenKeys() error {
 	key, err := rsa.GenerateKey(rand.Reader, int(KEY_SIZE))
 	if err != nil {
-		return nil, nil
+		return err
 	}
+	k.privateKey = key
 
-	//log.Println(k.PrivateKey, k.PublicKey)
-	return key, &key.PublicKey
-
+	return nil
 }
 
+func (k *Keys) GetPublicKey() *rsa.PublicKey {
+	return &k.privateKey.PublicKey
+}
 func (k Keys) ToString() (string, string) {
-	privStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(k.PrivateKey))
-	pubStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(k.PublicKey))
+	privStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(k.GetPrivate()))
+	pubStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(k.GetPublicKey()))
 
 	return privStr, pubStr
 }

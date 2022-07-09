@@ -81,16 +81,16 @@ func (bc *Blockchain) VerifyBlock(b *Block) bool {
 
 func (bc *Blockchain) ShowHistory() {
 	fmt.Println("SHOW HISTORY")
-	for i, block := range bc.BlockHistory {
-		fmt.Println(i)
+	for _, block := range bc.BlockHistory {
+
 		fmt.Println(block.ToString())
 	}
 }
 
 func (bc *Blockchain) ShowMappol() {
 	fmt.Println("SHOW MAPPOOL")
-	for i, tx := range Mappool {
-		fmt.Println(i)
+	for _, tx := range Mappool {
+
 		fmt.Println(tx.ToString())
 	}
 }

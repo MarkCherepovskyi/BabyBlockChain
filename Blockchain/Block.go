@@ -37,7 +37,7 @@ func (b *Block) AddTx() {
 func (b *Block) SignBlock() []byte {
 
 	strBlock := b.ToString()
-	sign, err := b.Signer.Wallets.Sign(strBlock, b.Signer.Wallets.PrivateKey)
+	sign, err := b.Signer.Wallets.Sign(strBlock, b.Signer.Wallets.GetPrivate())
 	if err != nil {
 		return nil
 	}
@@ -46,7 +46,7 @@ func (b *Block) SignBlock() []byte {
 
 func (b *Block) Verify() bool {
 
-	_, err := Verify(b.Signer.Wallets.PublicKey, b.ToString(), b.Sign)
+	_, err := Verify(b.Signer.Wallets.GetPublicKey(), b.ToString(), b.Sign)
 	if err != nil {
 		return false
 	}
@@ -63,7 +63,7 @@ func genID() (string, error) {
 }
 
 func (b *Block) ToString() string {
-	return fmt.Sprintf("ID - %s\nPrevHash - %s\nSetOfTx - %s\nTime - %s\n", b.ID, b.PrevHash, b.TxToString(), b.time.String())
+	return fmt.Sprintf("ID of Block - %s\nPrevHash - %s\nSetOfTx - %s\nTime - %s\n", b.ID, b.PrevHash, b.TxToString(), b.time.String())
 }
 
 func (b *Block) TxToString() string {

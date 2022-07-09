@@ -91,7 +91,9 @@ func GenAccount() *Account {
 		fmt.Println("Your ID is added")
 	}
 	a.Wallets = Keys{}
-	a.Wallets.PrivateKey, a.Wallets.PublicKey = a.Wallets.GenKeys()
+	//a.Wallets.PrivateKey, a.Wallets.PublicKey =
+	a.Wallets.GenKeys()
+
 	a.Validator = false
 	a.Balance = 1
 	a.Candidate = false
@@ -135,7 +137,7 @@ func (a *Account) VerifyTX(tx *Transaction) bool {
 }
 
 func (a *Account) SignData(data string) ([]byte, error) {
-	sign, err := a.Wallets.Sign(data, a.Wallets.PrivateKey)
+	sign, err := a.Wallets.Sign(data, a.Wallets.GetPrivate())
 	if sign == nil {
 		return nil, err
 	}
