@@ -34,12 +34,6 @@ func (k *Keys) GenKeys() error {
 func (k *Keys) GetPublicKey() *rsa.PublicKey {
 	return &k.privateKey.PublicKey
 }
-func (k Keys) ToString() (string, string) {
-	privStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(k.GetPrivate()))
-	pubStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(k.GetPublicKey()))
-
-	return privStr, pubStr
-}
 
 func (k Keys) Sign(data string, key *rsa.PrivateKey) ([]byte, error) {
 	hash := crypto.SHA256.New()
@@ -66,4 +60,11 @@ func Verify(pub *rsa.PublicKey, data string, sign []byte) (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+func (k Keys) ToString() (string, string) {
+	privStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(k.GetPrivate()))
+	pubStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(k.GetPublicKey()))
+
+	return privStr, pubStr
 }

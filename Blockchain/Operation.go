@@ -7,13 +7,13 @@ import (
 )
 
 type Operation struct {
-	Sender    Account
-	Receiver  Account
+	Sender    *Account
+	Receiver  *Account
 	Amount    int
 	Signature []byte
 }
 
-func VerifyOperation(o Operation) bool {
+func VerifyOperation(o *Operation) bool {
 	if o.Amount > o.Sender.Balance {
 		fmt.Println("Balance is unvalid")
 		return false
@@ -38,24 +38,22 @@ func (o *Operation) CreateTxt() *Transaction {
 		0,
 	}
 	ID++
-	tx.addOp(*o)
+	tx.addOp(o)
 
 	return &tx
 }
+func (o *Operation) carryOutOp() {
+	o.Receiver.UpdateBalance(o.Receiver.Balance + 1)
+	o.Sender.UpdateBalance(0)
+}
 
-func (o Operation) ToString() string {
+func (o *Operation) ToString() string {
 	senderStr := o.Sender.ToString()
 	receiverStr := o.Receiver.ToString()
 
 	return fmt.Sprintf("Sender: \n%s\nReceiver: \n%s\nAmount -  %d\n", senderStr, receiverStr, o.Amount)
 }
 
-func (o Operation) PrintKey() {
+func (o *Operation) PrintKey() {
 	fmt.Println(o.Sender.Wallets.ToString())
-}
-
-func (o Operation) carryOutOp() {
-	o.Receiver.Balance++
-	o.Sender.Balance--
-
 }

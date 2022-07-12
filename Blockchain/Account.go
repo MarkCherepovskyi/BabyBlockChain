@@ -20,26 +20,28 @@ type Account struct {
 	Candidate bool
 }
 
-func (a *Account) CreateBlock(prevHash []byte) *Block {
+func (a *Account) CreateBlock(bc *Blockchain) *Block {
 	b := Block{
 		"",
-		prevHash,
+		bc.LastHash(),
 		time.Now(),
 		nil,
 		a,
 		nil,
 	}
 
-	id, err := genID()
+	id, err := genIDBlock()
 	if err != nil {
 		b.ID = "Empty ID"
 	}
 	b.ID = id
 	b.AddTx()
+	bc.AddBlock(&b)
+
 	return &b
 }
 
-func (a Account) CreateOperation(receiver Account) (*Operation, error) {
+func (a *Account) CreateOperation(receiver *Account) (*Operation, error) {
 	sender := a
 	if receiver.Candidate {
 		o := Operation{
@@ -100,9 +102,10 @@ func GenAccount() *Account {
 	return &a
 }
 
-func (a *Account) BecomeCandidate(c *Account) {
+func (a *Account) BecomeCandidate(c *Account, bc *Blockchain) {
 	if a.Validator {
 		c.Candidate = true
+		bc.Candidates = append(bc.Candidates, c)
 	}
 }
 
@@ -128,6 +131,7 @@ func (a *Account) GetBalance() int {
 func (a *Account) VerifyTX(tx *Transaction) bool {
 	if a.Validator {
 		valid, _ := Verify(tx.PublicKey, tx.ToString(), tx.FullSign)
+
 		if !valid {
 			return false
 		}

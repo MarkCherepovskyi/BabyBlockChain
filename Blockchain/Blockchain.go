@@ -26,7 +26,7 @@ func genesiBlock() *Block {
 		time.Now(),
 		nil,
 		nil,
-		nil,
+		[]byte("GENESIS_BLOCK"),
 	}
 	return &b
 }
@@ -63,14 +63,21 @@ func (bc *Blockchain) ShowCandidate() {
 }
 
 func (bc *Blockchain) AddBlock(b *Block) {
-	if bytes.Equal(bc.BlockHistory[len(bc.BlockHistory)-1].Sign, b.PrevHash) {
+	if bytes.Equal(bc.LastHash(), b.PrevHash) && b.setOfTransaction != nil {
 		bc.BlockHistory = append(bc.BlockHistory, b)
+		bc.AddToTxDB(b)
 	}
 
 }
 
+func (bc *Blockchain) AddToTxDB(b *Block) {
+	for _, tx := range b.setOfTransaction {
+		bc.TxDatabase = append(bc.TxDatabase, tx)
+	}
+}
+
 func (bc *Blockchain) VerifyBlock(b *Block) bool {
-	if bytes.Equal(bc.BlockHistory[len(bc.BlockHistory)-1].Sign, b.PrevHash) {
+	if bytes.Equal(bc.LastHash(), b.PrevHash) {
 		if b.Verify() {
 			return true
 		}
@@ -93,4 +100,40 @@ func (bc *Blockchain) ShowMappol() {
 
 		fmt.Println(tx.ToString())
 	}
+}
+func (bc *Blockchain) ShowScore() {
+	fmt.Println("SHOW SCORE")
+	for _, candidate := range bc.Candidates {
+		fmt.Printf("Candidate %s has  %d coins", candidate.ID, candidate.Balance)
+	}
+}
+
+func (bc *Blockchain) ShowCandidates() {
+	fmt.Println("SHOW CANDIDATES")
+	for _, candidate := range bc.Candidates {
+		fmt.Printf("Candidate %s ", candidate.ID)
+	}
+}
+
+func (bc *Blockchain) ShowLen() {
+	fmt.Printf("Len is %d blocks", len(bc.BlockHistory))
+}
+
+func (bc *Blockchain) ShowTXDB() {
+	fmt.Println("SHOW TX DB")
+	for _, tx := range bc.TxDatabase {
+		fmt.Println(tx)
+	}
+}
+
+func (bc *Blockchain) LastBlock() *Block {
+	return bc.BlockHistory[len(bc.BlockHistory)-1]
+}
+
+func (bc *Blockchain) LastHash() []byte {
+	hash := bc.LastBlock().Sign
+	if hash == nil {
+		return []byte("Error hash ")
+	}
+	return hash
 }

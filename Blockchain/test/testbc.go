@@ -2,34 +2,58 @@ package main
 
 import (
 	"Lab/BabyBlockChain2/Blockchain"
+	"log"
 )
 
 func main() {
+
+	bc := Blockchain.InitBlockchain()
+
 	ac := Blockchain.GenAccount()
 	ac.ChangeMyStatus()
 	ac2 := Blockchain.GenAccount()
-	ac.BecomeCandidate(ac2)
+	ac.BecomeCandidate(ac2, bc)
 	ac3 := Blockchain.GenAccount()
 	ac4 := Blockchain.GenAccount()
 	ac5 := Blockchain.GenAccount()
 
-	bc := Blockchain.InitBlockchain()
+	_, err := ac.CreateOperation(ac2)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = ac3.CreateOperation(ac2)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = ac3.CreateOperation(ac2)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = ac4.CreateOperation(ac2)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = ac5.CreateOperation(ac2)
+	if err != nil {
+		log.Println(err)
+	}
 
-	ac.CreateOperation(*ac2)
-	ac3.CreateOperation(*ac2)
-	ac4.CreateOperation(*ac2)
-	ac5.CreateOperation(*ac2)
-	b1 := ac.CreateBlock(bc.BlockHistory[len(bc.BlockHistory)-1].Sign)
-	b1.AddTx()
-	b2 := ac.CreateBlock(bc.BlockHistory[len(bc.BlockHistory)-1].Sign)
-	b2.AddTx()
-	bc.AddBlock(b1)
-	bc.AddBlock(b2)
+	ac.CreateBlock(bc)
+	bc.ShowLen()
 
+	ac.CreateBlock(bc)
+	bc.ShowLen()
+
+	ac.CreateBlock(bc)
+	bc.ShowLen()
 	//
 	//fmt.Println(b1.ToString())
 
 	bc.ShowMappol()
 	bc.ShowHistory()
 
+	bc.ShowCandidates()
+	bc.ShowScore()
+	bc.ShowLen()
+	
 }

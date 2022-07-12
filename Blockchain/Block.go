@@ -14,7 +14,7 @@ type Block struct {
 	ID               string
 	PrevHash         []byte
 	time             time.Time
-	setOfTransaction []Transaction
+	setOfTransaction []*Transaction
 	Signer           *Account
 	Sign             []byte
 }
@@ -22,15 +22,17 @@ type Block struct {
 func (b *Block) AddTx() {
 	for _, tx := range Mappool {
 		if len(b.setOfTransaction) < MAX_NUM_OF_TX {
-			if b.Signer.VerifyTX(&tx) {
+			if b.Signer.VerifyTX(tx) {
 				b.setOfTransaction = append(b.setOfTransaction, tx)
 				Mappool = Mappool[:len(Mappool)-1]
 				tx.Operation.carryOutOp()
 			}
+		} else if len(b.setOfTransaction) == MAX_NUM_OF_TX {
+
+			b.SignBlock()
+			return
 		}
 	}
-
-	b.SignBlock()
 
 }
 
@@ -51,7 +53,6 @@ func (b *Block) Verify() bool {
 		return false
 	}
 	return true
-
 }
 
 func genID() (string, error) {
@@ -59,18 +60,26 @@ func genID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("IDTX%s", id.String()), nil
+	return fmt.Sprintf("IDACC%s", id.String()), nil
 }
 
+func genIDBlock() (string, error) {
+
+	id, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("IDBLOCK%s", id.String()), nil
+
+}
 func (b *Block) ToString() string {
-	return fmt.Sprintf("ID of Block - %s\nPrevHash - %s\nSetOfTx - %s\nTime - %s\n", b.ID, b.PrevHash, b.TxToString(), b.time.String())
+	return fmt.Sprintf("IDTX of Block - %s\nPrevHash - %s\nSetOfTx - %s\nTime - %s\n", b.ID, b.PrevHash, b.TxToString(), b.time.String())
 }
 
 func (b *Block) TxToString() string {
 	buffer := ""
 	for _, tx := range b.setOfTransaction {
 		buffer += tx.ToString()
-
 	}
 	return buffer
 }
